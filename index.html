@@ -61,7 +61,7 @@ l8buX1QrDo/pQOQaK5xC5bE=
                 }
 
                 const proxyURL = "https://corsproxy.io/";
-                const accessToken = getAccessTokenWithJWT(jwt, proxyURL);
+                const accessToken = await getAccessTokenWithJWT(jwt, proxyURL);
 
                 if (!accessToken) {
                     console.log("Access token generation failed");
