@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salesforce API Test</title>
+</head>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/forge/0.10.0/forge.min.js"></script>
+<body>
+    <h2>Salesforce API Test</h2>
+    <button id="fetchButton">Fetch Accounts</button>
+    <pre id="output">Click the button to fetch data...</pre>
+
+    <script type="module">
+        import { generateJWT } from "./sfJwtOAuth.js";
+        import { getAccessTokenWithJWT } from "./sfJwtOAuth.js";
+
+
+        async function fetchSalesforceData() {
+            try {
+                // Define JWT parameters
+                const issuer = "3MVG9PwZx9R6_Urc0cQrQZGGWJ8wnLEg3UsWJFOZFTHw2C7BJVNXBIb1XvTo1TGHYs.K5jz.k_5nONuka9jIt";
+                const audience = "https://login.salesforce.com";
+                const subscriber = "stefannidzovic3@resilient-unicorn-c9ugo0.com";
+                const privateKeyPEM = `-----BEGIN PRIVATE KEY-----
+MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCIXle3x8hwJKhj
+j7CF7KxhW7DIj4NW3TAElB47w3rKmTQZnv+G8IF9fQSe4CdG7NEsd6qtR0fOkDy2
+HRmI/1ANEACKfyydcwNZgNow0KXXIN/DZg4GdyDElaDg+VfU/c/etEcYX2Fhx0TR
+93p5Kzs7zC+JbYtYJqwYbDHACeMxwgrIw2S4axvb9qGCgNpCuggdcTZU/r8L8oN6
+V9LNHLxVgzC92Hqkg0hDYyllTECC+0YRNsgfrkAvK3rcAGgLs/Xs2aRiXe/5Wx8Y
+6iUtjGKPvbt0TaR39sxorMO4U+tVLkMG0Mh7B2NOMCKMBN3jCxUxUuKcP+8PQN9u
+0DM2On2rAgMBAAECggEAIhRBo6H/y1a95jOwj6d35NS/Nz/2OK0KJPrHG3RcqWjk
+Bksf3J8aHTwy/WlTJ3xjQdOeCbO4lDyjj3dyPDRh0wHewL3LboWhnqp+3Jgn+b0z
+bmeAtcjrnXUvQUnO02Gioys2YTbk5UShRD+ukb1mDimW76c6nYr8kxXm0PEnn/Va
+yM89pjJPH0wPdT15rBhEas597avbgDOiE0PgZYahmhTmgIPneLwuHmh90wYkuTVd
+6a3kGvrfR6IsixH6uEBJN0F18gECOnsQNFscj6VY2gZ7s/MQc/4+UsPEd1cJVS9y
+BofplrRvWCOOWyKBFZD5Qvm4YJDI/6icazPqYTCMIQKBgQC+jQnIVEWnq4JrW0Ue
+Z1Hq8rLK9hIKeY28Cz1c8iKCx/QncL8L6S+fiJbmTlCwVUQ+J5Pv//lQSL+oh2Dp
+wcJdCK9C28r4Xrl5ia9n3yJX/q29kpRW7GPjPBm7FOAIBvO6dEsz+SYSN+6qCmVH
+iBUb9f1SXO90ohu1Dw11BzXa6QKBgQC3NRjjfQ/05hiCiTEvN/EH9HWxnNteQhC2
+cerqwFOdbBHjO94xOwEFkSXqkJ8YhRbcaV+arnZo/8BhjRKx7dzxFkRfKH5UvWe9
+Y8lnA0tds13eRQeLRSGFRy0qKiqBvDG651XHjDIweOceDmFXpMyqDB01jassrBSg
+g5TDixmPcwKBgAIoSqIQAjHhyTo58FBlzxGf6dJOcunXcnlcjzdMLoPYi7Uem6sg
+2r8tpre4z0UP0hP6Ery24zW7fSAFWF2NKgwvmvxgzK1/NQ5hNrEwX40rfwAUdsV9
+K6xY89mgZODyYzQLOQa/nWS7aWJXd8oVileks1eJYdSqOTIVl4tpp3xxAoGAXkIN
+Og2ABinT9mULTxXjBoq5etYO7yHiY1uc14Z3/og5c8W7fWy0C98vuM0LbZwbtO7p
+5zVXapIaspXYRn7wq4EfUC4PQR3pn8EVP9CsF9tOsiqlxPueUWnbTNRA5lqi41xd
+/7qbn+C0V/xiDKuXOO3eoUzwAp3ORv8rrKeGUQ0CgYEAl+pOPYXJopI4fU738G9p
+E2KAhbl+BvuLk3nNMZhAlubksbeGEYZHJ556mY+HnFfQDrbb7xxjOGDfgDXBKE+d
+H12rvqmoEZMWnHjc0+UjEcQmHU3tSX8AG2cfkSYUwve6e1545VaKFT9JxYKIOcAb
+l8buX1QrDo/pQOQaK5xC5bE=
+-----END PRIVATE KEY-----
+`;
+
+                // Generate JWT using imported function
+                const jwt = generateJWT("RS256", "JWT", issuer, audience, subscriber, Math.floor(Date.now() / 1000) + 300, privateKeyPEM);
+
+                if (!jwt) {
+                    console.log("JWT generation failed");
+                    return null;
+                }
+
+                const proxyURL = "https://corsproxy.io/";
+                const accessToken = getAccessTokenWithJWT(jwt, proxyURL);
+
+                if (!accessToken) {
+                    console.log("Access token generation failed");
+                    return null;
+                }
+
+                // Fetch Salesforce Accounts
+                const url = "https://resilient-unicorn-c9ugo0-dev-ed.trailblaze.my.salesforce.com/services/data/v57.0/query/?q=SELECT+Id,Name+FROM+Account";
+                
+                const response = await fetch(url, {
+                    method: "GET",
+                    headers: {
+                        "Authorization": `Bearer ${accessToken}`,
+                        "Content-Type": "application/json"
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP Error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                document.getElementById("output").textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                document.getElementById("output").textContent = `Error: ${error.message}`;
+                console.error("API Call Failed:", error);
+            }
+        }
+
+        // Attach function to button click event
+        document.getElementById("fetchButton").addEventListener("click", fetchSalesforceData);
+    </script>
+</body>
+</html>
